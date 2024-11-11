@@ -7,6 +7,11 @@ pipeline {
     }
 
     stages {
+        stage('Git Checkout') {
+            steps {
+                git branch: 'master', url: 'https://github.com/ImiderAbdessamad/devops-part-jenkins.git'
+            }
+        }
         stage('Build') {
             agent {
                 docker {
