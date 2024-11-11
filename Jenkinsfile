@@ -4,6 +4,9 @@ pipeline {
     environment {
         NETLIFY_AUTH_TOKEN = credentials('netlify_id')
         NETLIFY_SITE_ID = 'cbe96a30-7591-4b4f-bfd7-b7ebe657d57c'
+        // Ensure we use the tools installed on Jenkins
+        NODEJS_HOME = tool 'NodeJS' // Make sure you have NodeJS installed in Jenkins Global Tool Configuration
+        PATH = "${env.NODEJS_HOME}\\bin;${env.PATH}"
     }
 
     stages {
@@ -16,58 +19,38 @@ pipeline {
         }
         
         stage('Build') {
-            agent {
-                docker {
-                    image 'node:18-alpine'
-                    // Remove workspace mounting since Jenkins handles this
-                    reuseNode true
-                }
-            }
             steps {
-                script {
-                    // Use bat for Windows, sh for Linux
-                    if (isUnix()) {
-                        sh '''
-                            node --version
-                            npm --version
-                            npm ci
-                            npm run build
-                            ls -la
-                        '''
-                    } else {
-                        bat '''
-                            node --version
-                            npm --version
-                            npm ci
-                            npm run build
-                            dir
-                        '''
-                    }
-                }
+                bat '''
+                    echo "Node version:"
+                    node --version
+                    
+                    echo "NPM version:"
+                    npm --version
+                    
+                    echo "Installing dependencies..."
+                    npm ci
+                    
+                    echo "Building project..."
+                    npm run build
+                    
+                    echo "Listing build output:"
+                    dir build
+                '''
             }
         }
 
         stage('Test') {
-            agent {
-                docker {
-                    image 'node:18-alpine'
-                    reuseNode true
-                }
-            }
             steps {
-                script {
-                    if (isUnix()) {
-                        sh '''
-                            test -f build/index.html
-                            npm test
-                        '''
-                    } else {
-                        bat '''
-                            if not exist build\\index.html exit 1
-                            npm test
-                        '''
-                    }
-                }
+                bat '''
+                    echo "Running tests..."
+                    IF exist "build\\index.html" (
+                        echo "Build verified - index.html exists"
+                    ) ELSE (
+                        echo "Error: build/index.html not found"
+                        exit 1
+                    )
+                    npm test
+                '''
             }
             post {
                 always {
@@ -77,29 +60,30 @@ pipeline {
         }
 
         stage('Deploy') {
-            agent {
-                docker {
-                    image 'node:18-alpine'
-                    reuseNode true
-                }
-            }
             steps {
-                script {
-                    if (isUnix()) {
-                        sh '''
-                            npm install netlify-cli
-                            ./node_modules/.bin/netlify --version
-                            ./node_modules/.bin/netlify deploy --prod --dir=build --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN
-                        '''
-                    } else {
-                        bat '''
-                            npm install netlify-cli
-                            .\\node_modules\\.bin\\netlify --version
-                            .\\node_modules\\.bin\\netlify deploy --prod --dir=build --site=%NETLIFY_SITE_ID% --auth=%NETLIFY_AUTH_TOKEN%
-                        '''
-                    }
-                }
+                bat '''
+                    echo "Installing Netlify CLI..."
+                    npm install netlify-cli --no-save
+                    
+                    echo "Netlify CLI version:"
+                    .\\node_modules\\.bin\\netlify --version
+                    
+                    echo "Deploying to Netlify..."
+                    .\\node_modules\\.bin\\netlify deploy --prod --dir=build --site=%NETLIFY_SITE_ID% --auth=%NETLIFY_AUTH_TOKEN%
+                '''
             }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed! Check the logs above for details.'
         }
     }
 }
