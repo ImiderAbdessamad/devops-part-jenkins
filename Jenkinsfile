@@ -12,16 +12,18 @@ pipeline {
                 git branch: 'master', url: 'https://github.com/ImiderAbdessamad/devops-part-jenkins.git', credentialsId: 'github_token'
             }
         }
+        
         stage('Build') {
             agent {
                 docker {
                     image 'node:18-alpine'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock' // Mappez le socket Docker si nécessaire
-                    reuseNode true
+                    args '-v /var/run/docker.sock:/var/run/docker.sock' // Map the Docker socket if necessary
                 }
             }
             steps {
                 sh '''
+                    mkdir -p /workspace
+                    cd /workspace
                     ls -la
                     node --version
                     npm --version
@@ -32,17 +34,16 @@ pipeline {
             }
         }
 
-        
-
         stage('Test') {
             agent {
                 docker {
                     image 'node:18-alpine'
-                    reuseNode true
+                    args '-v /var/run/docker.sock:/var/run/docker.sock' // Map the Docker socket if necessary
                 }
             }
             steps {
                 sh '''
+                    cd /workspace
                     test -f build/index.html
                     npm test
                 '''
@@ -58,7 +59,7 @@ pipeline {
             agent {
                 docker {
                     image 'node:18-alpine'
-                    reuseNode true
+                    args '-v /var/run/docker.sock:/var/run/docker.sock' // Map the Docker socket if necessary
                 }
             }
             steps {
