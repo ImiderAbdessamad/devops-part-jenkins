@@ -17,12 +17,12 @@ pipeline {
             agent {
                 docker {
                     image 'node:18-alpine'
-                   
+                    args '-v /var/run/docker.sock:/var/run/docker.sock -w /workspace' // Set workspace in Docker
                 }
             }
             environment {
-                  HOME="."
-                }
+                HOME = "/workspace" // Set home to workspace to avoid issues
+            }
             steps {
                 sh '''
                     mkdir -p /workspace
@@ -44,6 +44,9 @@ pipeline {
                     args '-v /var/run/docker.sock:/var/run/docker.sock -w /workspace'
                 }
             }
+            environment {
+                HOME = "/workspace"
+            }
             steps {
                 sh '''
                     cd /workspace
@@ -64,6 +67,9 @@ pipeline {
                     image 'node:18-alpine'
                     args '-v /var/run/docker.sock:/var/run/docker.sock -w /workspace'
                 }
+            }
+            environment {
+                HOME = "/workspace"
             }
             steps {
                 sh '''
