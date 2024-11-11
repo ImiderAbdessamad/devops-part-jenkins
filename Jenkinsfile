@@ -1,12 +1,13 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs 'NodeJS18' // Make sure this name matches exactly what you configure in Jenkins
+    }
+
     environment {
         NETLIFY_AUTH_TOKEN = credentials('netlify_id')
         NETLIFY_SITE_ID = 'cbe96a30-7591-4b4f-bfd7-b7ebe657d57c'
-        // Ensure we use the tools installed on Jenkins
-        NODEJS_HOME = tool 'NodeJS' // Make sure you have NodeJS installed in Jenkins Global Tool Configuration
-        PATH = "${env.NODEJS_HOME}\\bin;${env.PATH}"
     }
 
     stages {
@@ -77,7 +78,9 @@ pipeline {
 
     post {
         always {
-            cleanWs()
+            node('built-in') {
+                cleanWs()
+            }
         }
         success {
             echo 'Pipeline completed successfully!'
