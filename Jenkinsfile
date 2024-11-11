@@ -17,9 +17,12 @@ pipeline {
             agent {
                 docker {
                     image 'node:18-alpine'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock -w /workspace'
+                   
                 }
             }
+            environment {
+                  HOME="."
+                }
             steps {
                 sh '''
                     mkdir -p /workspace
