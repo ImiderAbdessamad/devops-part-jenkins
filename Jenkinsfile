@@ -17,7 +17,7 @@ pipeline {
             agent {
                 docker {
                     image 'node:18-alpine'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock' // Map the Docker socket if necessary
+                    args '-v /var/run/docker.sock:/var/run/docker.sock -w /workspace'
                 }
             }
             steps {
@@ -38,7 +38,7 @@ pipeline {
             agent {
                 docker {
                     image 'node:18-alpine'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock' // Map the Docker socket if necessary
+                    args '-v /var/run/docker.sock:/var/run/docker.sock -w /workspace'
                 }
             }
             steps {
@@ -59,7 +59,7 @@ pipeline {
             agent {
                 docker {
                     image 'node:18-alpine'
-                    args '-v /var/run/docker.sock:/var/run/docker.sock' // Map the Docker socket if necessary
+                    args '-v /var/run/docker.sock:/var/run/docker.sock -w /workspace'
                 }
             }
             steps {
