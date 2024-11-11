@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Git Checkout') {
             steps {
-                git branch: 'master', url: 'https://github.com/ImiderAbdessamad/devops-part-jenkins.git'
+                git branch: 'master', url: 'https://github.com/ImiderAbdessamad/devops-part-jenkins.git', credentialsId: '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'
             }
         }
         stage('Build') {
